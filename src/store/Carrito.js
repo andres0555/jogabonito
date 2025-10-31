@@ -1,130 +1,173 @@
-import { defineStore } from 'pinia';
-import Swal from 'sweetalert2';
-import API from '@/Services/axios';
+import { defineStore } from "pinia";
+import Swal from "sweetalert2";
+import API from "@/Services/axios";
 
-// Validar datos de localStorage
+// Validar datos de localStorage para evitar errores
 function validateCarritoData(data) {
   if (!Array.isArray(data)) return [];
-  return data.filter(item => {
+  return data.filter((item) => {
     return (
       item &&
-      typeof item === 'object' &&
-      Number.isInteger(item.id) &&
-      typeof item.nombre === 'string' &&
-      typeof item.precio === 'number' &&
+      typeof item === "object" &&
+      Number.isInteger(item.id_variante) &&
+      typeof item.nombre === "string" &&
+      typeof item.precio === "number" &&
       Number.isInteger(item.cantidad) &&
       item.cantidad > 0 &&
-      typeof item.imagen === 'string'
+      typeof item.imagen === "string"
     );
   });
 }
 
-export const useCarritoStore = defineStore('carrito', {
+export const useCarritoStore = defineStore("carrito", {
   state: () => ({
-    productos: validateCarritoData(JSON.parse(localStorage.getItem('carrito') || '[]')),
-    ultimaCompra: null // 🧾 Nueva propiedad: almacena la última compra antes de limpiar el carrito
+    productos: validateCarritoData(
+      JSON.parse(localStorage.getItem("carrito") || "[]")
+    ),
+    ultimaCompra: null,
   }),
 
   actions: {
-    // Agregar producto al carrito
+    // AGREGAR PRODUCTO AL CARRITO
     agregarProducto(producto) {
-      if (!producto || !Number.isInteger(producto.id) || !producto.nombre || !producto.precio || !producto.imagen) {
-        console.error('Producto inválido:', producto);
+      if (
+        !producto ||
+        !Number.isInteger(producto.id_variante) ||
+        !producto.nombre ||
+        !producto.precio ||
+        !producto.imagen
+      ) {
+        console.error("Producto inválido:", producto);
         return;
       }
-      const existente = this.productos.find(p => p.id === producto.id);
+
+      const existente = this.productos.find(
+        (p) => p.id_variante === producto.id_variante
+      );
+
       if (existente) {
         existente.cantidad += 1;
       } else {
         this.productos.push({ ...producto, cantidad: 1 });
       }
+
       this.saveToLocalStorage();
+
       Swal.fire({
-        icon: 'success',
-        title: 'Producto agregado',
+        icon: "success",
+        title: "¡Agregado!",
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     },
 
-    // Quitar producto del carrito
-    quitarProducto(id) {
-      const index = this.productos.findIndex(p => p.id === id);
+    // QUITAR PRODUCTO
+    quitarProducto(id_variante) {
+      const index = this.productos.findIndex(
+        (p) => p.id_variante === id_variante
+      );
       if (index !== -1) {
         this.productos.splice(index, 1);
         this.saveToLocalStorage();
       }
     },
 
-    // Actualizar cantidad
-    actualizarCantidad(id, cantidad) {
-      const producto = this.productos.find(p => p.id === id);
+    // ACTUALIZAR CANTIDAD
+    actualizarCantidad(id_variante, cantidad) {
+      const producto = this.productos.find(
+        (p) => p.id_variante === id_variante
+      );
       if (producto) {
-        producto.cantidad = Math.max(1, parseInt(cantidad));
+        producto.cantidad = Math.max(1, parseInt(cantidad) || 1);
         this.saveToLocalStorage();
       }
     },
 
-    // Limpiar carrito
+    // LIMPIAR CARRITO
     limpiarCarrito() {
       this.productos = [];
       this.saveToLocalStorage();
     },
 
-    // 🧾 Finalizar compra (guardar factura antes de vaciar carrito)
+    // FINALIZAR COMPRA
     async finalizarCompra(idUsuario) {
       try {
+        if (this.productos.length === 0) {
+          Swal.fire("Tu carrito está vacío");
+          return;
+        }
+
         const total = this.total;
-        const detalle = this.productos.map(p => ({
-          id_producto: p.id,
+
+        // MAPEO CORRECTO: incluye id_variante y precio como número
+        const detalle = this.productos.map((p) => ({
+          id_variante: p.id_variante,           // OBLIGATORIO
           cantidad: p.cantidad,
-          precio_unitario: p.precio,
+          precio_unitario: Number(p.precio),    // NÚMERO, no string
+          nombre: p.nombre,
+          talla: p.talla || "",
         }));
 
-        // Guardar información antes de limpiar el carrito
-        this.ultimaCompra = {
-          productos: [...this.productos],
-          total,
-          fecha: new Date().toLocaleString('es-CO')
-        };
-
-        const response = await API.post('/compras/compras-carrito', {
+        console.log("Enviando compra:", {
           id_usuario: idUsuario,
           total,
           detalle,
-          metodo_pago: 'tarjeta'
         });
 
-        // Vaciar carrito después de guardar la factura
+        const response = await API.post("/compras/compras-carrito", {
+          id_usuario: idUsuario,
+          total,
+          detalle,
+          metodo_pago: "tarjeta",
+        });
+
+        if (!response.data.id_factura) {
+          throw new Error("No se recibió ID de factura");
+        }
+
+        // Guardar última compra para mostrar en factura.vue
+        this.ultimaCompra = {
+          productos: [...this.productos],
+          total,
+          fecha: new Date().toLocaleString("es-CO"),
+          id_factura: response.data.id_factura,
+        };
+
         this.limpiarCarrito();
 
         Swal.fire({
-          icon: 'success',
-          title: 'Compra procesada correctamente',
-          text: `Total: $${total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }).replace('COP', '').trim()}`,
+          icon: "success",
+          title: "¡Compra exitosa!",
+          text: `Factura #${response.data.id_factura}`,
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
 
-        return response.data;
+        return this.ultimaCompra;
       } catch (error) {
+        console.error("Error en finalizarCompra:", error.response?.data || error);
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.response?.data?.error || 'Error al finalizar la compra'
+          icon: "error",
+          title: "Error en el pago",
+          text: error.response?.data?.error || "Intenta de nuevo o contacta soporte",
         });
         throw error;
       }
     },
 
-    // Guardar en localStorage
+    // GUARDAR EN LOCALSTORAGE
     saveToLocalStorage() {
-      localStorage.setItem('carrito', JSON.stringify(this.productos));
-    }
+      localStorage.setItem("carrito", JSON.stringify(this.productos));
+    },
   },
 
   getters: {
-    contador: (state) => state.productos.reduce((acc, p) => acc + p.cantidad, 0),
-    total: (state) => state.productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0),
-  }
+    // TOTAL DE PRODUCTOS
+    contador: (state) =>
+      state.productos.reduce((acc, p) => acc + p.cantidad, 0),
+
+    // TOTAL A PAGAR
+    total: (state) =>
+      state.productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0),
+  },
 });

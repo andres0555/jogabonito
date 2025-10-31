@@ -2,23 +2,14 @@
   <header>
     <nav class="barra" aria-label="Barra de navegación">
       <!-- Botón hamburguesa (solo móvil) -->
-      <button
-        class="icon-btn hamburger"
-        @click="toggleMenu"
-        v-if="isMobile"
-        aria-label="Abrir menú"
-      >
+      <button class="icon-btn hamburger" @click="toggleMenu" v-if="isMobile" aria-label="Abrir menú">
         <img src="@/assets/images/menu.png" alt="Menú" class="icon" />
       </button>
 
       <!-- Logo -->
       <div class="logo">
         <router-link to="/" class="logo-link">
-          <img
-            src="@/assets/Images/Logo.png"
-            alt="Logo JogaBonito"
-            class="logo-img"
-          />
+          <img src="@/assets/Images/Logo.png" alt="Logo JogaBonito" class="logo-img" />
         </router-link>
       </div>
 
@@ -27,41 +18,30 @@
         <li><router-link to="/">Home</router-link></li>
         <li><router-link to="/contacto">Contacto</router-link></li>
         <li><router-link to="/tienda">Tienda</router-link></li>
+        <li>
+          <router-link v-if="isAuthenticated && authStore.isAdmin" to="/perfil-admin"
+            class="boton-perfil-admin" title="Perfil Administrador">
+            Registro Facturas
+          </router-link>
+        </li>
       </ul>
 
       <!-- Sección derecha -->
       <div class="acciones">
         <!-- Botón iniciar sesión -->
-        <router-link
-          v-if="!isAuthenticated"
-          to="/login"
-          class="boton-login"
-          title="Iniciar sesión"
-        >
-          <img
-            src="@/assets/images/Logousuario.png"
-            alt="Iniciar sesión"
-            class="icono-usuario"
-          />
+        <router-link v-if="!isAuthenticated" to="/login" class="boton-login" title="Iniciar sesión">
+          <img src="@/assets/images/Logousuario.png" alt="Iniciar sesión" class="icono-usuario" />
         </router-link>
 
         <!-- Botón cerrar sesión -->
-        <button
-          v-if="isAuthenticated"
-          class="boton-cerrar"
-          @click="cerrarSesion"
-        >
+        <button v-if="isAuthenticated" class="boton-cerrar" @click="cerrarSesion">
           Cerrar sesión
         </button>
 
         <!-- Icono carrito -->
         <div class="icono-carrito">
           <router-link to="/carrito" class="boton-carrito" id="boton-carrito">
-            <img
-              class="carrito"
-              src="@/assets/images/Carrito de compras.png"
-              alt="Carrito"
-            />
+            <img class="carrito" src="@/assets/images/Carrito de compras.png" alt="Carrito" />
             <span id="contador-carrito" class="contador-carrito">{{ carritoStore.contador }}</span>
           </router-link>
         </div>
@@ -72,41 +52,26 @@
     <transition name="slide">
       <aside v-if="isMobile && menuOpen" class="sidebar">
         <div class="sidebar-header">
-          <button
-            class="icon-btn close"
-            @click="toggleMenu"
-            aria-label="Cerrar menú"
-          >
+          <button class="icon-btn close" @click="toggleMenu" aria-label="Cerrar menú">
             <img src="@/assets/images/cerrar.png" alt="Cerrar" class="icon" />
           </button>
         </div>
         <ul class="side-links">
           <li>
-            <router-link
-              to="/"
-              class="side-link"
-              exact-active-class="is-active"
-              @click="closeMenu"
-              >Home</router-link
-            >
+            <router-link to="/" class="side-link" exact-active-class="is-active" @click="closeMenu">Home</router-link>
           </li>
           <li>
-            <router-link
-              to="/contacto"
-              class="side-link"
-              exact-active-class="is-active"
-              @click="closeMenu"
-              >Contacto</router-link
-            >
+            <router-link to="/contacto" class="side-link" exact-active-class="is-active" @click="closeMenu">Contacto</router-link>
           </li>
           <li>
-            <router-link
-              to="/tienda"
-              class="side-link"
-              exact-active-class="is-active"
-              @click="closeMenu"
-              >Tienda</router-link
-            >
+            <router-link to="/tienda" class="side-link" exact-active-class="is-active" @click="closeMenu">Tienda</router-link>
+          </li>
+          <li>
+            <router-link v-if="isAuthenticated && authStore.isAdmin" to="/perfil-admin"
+              class="side-link" exact-active-class="is-active"
+              @click="closeMenu">
+              Registro Facturas
+            </router-link>
           </li>
         </ul>
       </aside>
@@ -282,12 +247,51 @@ function cerrarSesion() {
   font-size: 12px;
 }
 
+/* ====== Botones sin fondo (hamburguesa y cerrar) ====== */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn img {
+  display: block;
+  width: 35px;
+  height: auto;
+}
+
 /* ====== Sidebar móvil ====== */
 @media (max-width: 900px) {
   .links {
     display: none;
   }
+
+  .logo-img {
+    height: 35px; /* logo más pequeño en móvil */
+  }
+
+  .icono-usuario {
+    height: 30px;
+    width: 30px;
+  }
+
+  .boton-cerrar {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .carrito {
+    height: 25px;
+  }
+
+  .contador-carrito {
+    top: -5px;
+    right: -5px;
+    padding: 1px 4px;
+    font-size: 10px;
+  }
 }
+
 .sidebar {
   position: fixed;
   inset: 0 40% 0 0;

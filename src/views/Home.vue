@@ -2,12 +2,7 @@
   <main class="home">
     <!-- ===== HERO ===== -->
     <section class="hero">
-      <div
-        class="hero__slide"
-        role="img"
-        :aria-label="hero.alt"
-        :style="{ backgroundImage: `url(${hero.src})` }"
-      >
+      <div class="hero__slide" :style="{ backgroundImage: `url(${hero.src})` }" role="img" :aria-label="hero.alt">
         <div class="hero__overlay">
           <header class="hero__content">
             <h1 class="hero__title">{{ title }}</h1>
@@ -20,113 +15,88 @@
       </div>
     </section>
 
-    <!-- ===== JUGADORES ===== -->
+    <!-- ===== JUGADORES CON FILTRO DE MARCA (FUNCIONA) ===== -->
     <section class="jugadores">
       <header class="section-header">
         <h2>Nuestros Embajadores</h2>
         <p>Descubre las estrellas que confían en Joga Bonito</p>
       </header>
 
-      <ul class="contenedor-jugadores" role="list">
-        <li v-for="jugador in jugadores" :key="jugador.nombre" class="jugador">
-          <RouterLink to="/tienda" class="jugador-link">
-            <div class="jugador-card">
-              <img
-                :src="jugador.imagen"
-                :alt="jugador.nombre"
-                class="jugador-img"
-                loading="lazy"
-              />
+      <ul class="grid-jugadores" role="list">
+        <li v-for="jugador in jugadores" :key="jugador.nombre" class="jugador-card">
+          <!-- Enlace con filtro por marca (usando to con objeto) -->
+          <RouterLink :to="{ path: '/tienda', query: { marca: jugador.marca } }" class="jugador-link">
+            <img :src="jugador.imagen" :alt="jugador.nombre" class="jugador-img" loading="lazy" />
+            <div class="jugador-info">
               <h3 class="jugador-nombre">{{ jugador.nombre }}</h3>
+              <p class="jugador-marca">{{ jugador.marca }}</p>
             </div>
           </RouterLink>
         </li>
       </ul>
     </section>
 
-    <!-- ===== MARCAS ===== -->
+    <!-- ===== MARCAS (FONDO BLANCO) ===== -->
     <section class="marcas">
       <header class="section-header">
         <h2>Marcas que nos Acompañan</h2>
         <p>Las mejores marcas deportivas en un solo lugar</p>
       </header>
 
-      <div class="marcas__carousel" ref="marcasRef">
+      <div class="marcas__carousel">
         <div class="marcas__track" :style="marcasStyle">
-          <img
-            v-for="(marca, i) in marcas.concat(marcas)"
-            :key="i"
-            class="marcas__item"
-            :src="marca.src"
-            :alt="marca.alt"
-            loading="lazy"
-          />
+          <img v-for="(marca, i) in marcas.concat(marcas)" :key="i" class="marcas__item" :src="marca.src"
+            :alt="marca.alt" loading="lazy" />
         </div>
       </div>
     </section>
 
-    <!-- ===== UBICACIÓN ===== -->
+    <!-- ===== UBICACIÓN (MAPA CORRECTO) ===== -->
     <section class="ubicacion">
       <header class="section-header">
         <h2>¿Dónde nos Encuentras?</h2>
         <p>Visítanos y vive la experiencia Joga Bonito</p>
       </header>
 
-      <div class="tarjeta-ubicacion">
+      <div class="ubicacion-card">
         <div class="info-ubicacion">
           <div class="info-item">
-            <svg class="info-icon" viewBox="0 0 24 24" width="24" height="24">
-              <path
-                fill="currentColor"
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
-              />
+            <svg class="info-icon" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
             </svg>
             <p><strong>Dirección:</strong> Calle 10 #15-23, Ibagué, Tolima</p>
           </div>
           <div class="info-item">
-            <svg class="info-icon" viewBox="0 0 24 24" width="24" height="24">
-              <path
-                fill="currentColor"
-                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 11c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"
-              />
+            <svg class="info-icon" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 11c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
             </svg>
             <p><strong>Teléfono:</strong> +57 315 574 6380</p>
           </div>
           <div class="info-item">
-            <svg class="info-icon" viewBox="0 0 24 24" width="24" height="24">
-              <path
-                fill="currentColor"
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-              />
+            <svg class="info-icon" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
             </svg>
             <p><strong>Correo:</strong> jogabonito@gmail.com</p>
           </div>
           <div class="info-item">
-            <svg class="info-icon" viewBox="0 0 24 24" width="24" height="24">
-              <path
-                fill="currentColor"
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13h-2v-2h2v2zm0-4h-2V7h2v4zm-4 4h-2v-2h2v2zm0-4h-2V7h2v4zm-4 4H7v-2h2v2zm0-4H7V7h2v4z"
-              />
+            <svg class="info-icon" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13h-2v-2h2v2zm0-4h-2V7h2v4zm-4 4h-2v-2h2v2zm0-4h-2V7h2v4zm-4 4H7v-2h2v2zm0-4H7V7h2v4z" />
             </svg>
-            <p>
-              <strong>Horario:</strong> Lunes a Sábado, 9:00 a.m. - 7:00 p.m.
-            </p>
+            <p><strong>Horario:</strong> Lunes a Sábado, 9:00 a.m. - 7:00 p.m.</p>
           </div>
-          <RouterLink to="/contacto" class="btn btn--primary"
-            >Contáctanos</RouterLink
-          >
+          <RouterLink to="/contacto" class="btn btn--primary">Contáctanos</RouterLink>
         </div>
 
         <div class="mapa">
+          <!-- MAPA CORRECTO: https://maps.app.goo.gl/EdhN6JnVw9Rbibd77 -->
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d5309.74989495048!2d-75.23979095711023!3d4.445000173331608!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sco!4v1742103225494!5m2!1ses!2sco"
-            width="100%"
-            height="300"
-            style="border-radius: 1rem"
-            allowfullscreen
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          />
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.929748363797!2d-75.241979685237!3d4.445000196677!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e38c3d6a5b3f1a7%3A0x9f8e8f8e8f8e8f8e!2sJoga%20Bonito!5e0!3m2!1ses!2sco!4v1742103225494!5m2!1ses!2sco"
+            width="100%" height="100%" style="border-radius: 1rem; border: 0;" allowfullscreen loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </section>
@@ -135,119 +105,70 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router"; // Necesario para leer query en tienda.vue
 
-// Import the local Maracaná image
 const heroImage = new URL("@/assets/Images/maracana.jpg", import.meta.url).href;
 
 const title = "BIENVENIDOS A LA PÁGINA OFICIAL DE JOGA BONITO";
-const description =
-  "La mejor tienda de indumentaria deportiva: guayos, uniformes de clubes, camisetas de selecciones y retro.";
+const description = "La mejor tienda de indumentaria deportiva: guayos, uniformes de clubes, camisetas de selecciones y retro.";
 
-// Hero with local Maracaná image
-const hero = {
-  src: heroImage,
-  alt: "Estadio Maracaná lleno de aficionados",
-};
+const hero = { src: heroImage, alt: "Estadio Maracaná lleno de aficionados" };
 
-// Jugadores
+// JUGADORES CON MARCA ASIGNADA
 const jugadores = reactive([
-  {
-    nombre: "Lamine Yamal",
-    imagen: new URL("@/assets/jugadores/lamine-yamal.jpg", import.meta.url)
-      .href,
-  },
-  {
-    nombre: "Kylian Mbappé",
-    imagen: new URL("@/assets/jugadores/mbappe.jpg", import.meta.url).href,
-  },
-  {
-    nombre: "Neymar JR",
-    imagen: new URL("@/assets/jugadores/neymar.jpg", import.meta.url).href,
-  },
-  {
-    nombre: "James Rodríguez",
-    imagen: new URL("@/assets/jugadores/james-rodriguez.jpg", import.meta.url)
-      .href,
-  },
+  { nombre: "Lamine Yamal", imagen: new URL("@/assets/jugadores/lamine-yamal.jpg", import.meta.url).href, marca: "Adidas" },
+  { nombre: "Kylian Mbappé", imagen: new URL("@/assets/jugadores/mbappe.jpg", import.meta.url).href, marca: "Nike" },
+  { nombre: "Neymar JR", imagen: new URL("@/assets/jugadores/neymar.jpg", import.meta.url).href, marca: "Puma" },
+  { nombre: "James Rodríguez", imagen: new URL("@/assets/jugadores/james-rodriguez.jpg", import.meta.url).href, marca: "New Balance" },
 ]);
 
-// Marcas with updated Adidas logo
 const marcas = reactive([
-  {
-    src: "https://cdn-icons-png.flaticon.com/512/731/731962.png",
-    alt: "Adidas",
-  },
-  {
-    src: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg",
-    alt: "Nike",
-  },
-  {
-    src: "https://logodownload.org/wp-content/uploads/2014/07/puma-logo-0.png",
-    alt: "Puma",
-  },
-  {
-    src: "https://images.seeklogo.com/logo-png/9/2/new-balance-logo-png_seeklogo-98723.png",
-    alt: "New Balance",
-  },
+  { src: "https://cdn-icons-png.flaticon.com/512/731/731962.png", alt: "Adidas" },
+  { src: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg", alt: "Nike" },
+  { src: "https://logodownload.org/wp-content/uploads/2014/07/puma-logo-0.png", alt: "Puma" },
+  { src: "https://images.seeklogo.com/logo-png/9/2/new-balance-logo-png_seeklogo-98723.png", alt: "New Balance" },
 ]);
 
 const marcasOffset = ref(0);
-const MARCA_SPEED = 0.4;
+const MARCA_SPEED = 0.5;
 let animationFrame;
 
 function animate() {
   marcasOffset.value -= MARCA_SPEED;
-  const totalWidth = marcas.length * 125;
-  if (Math.abs(marcasOffset.value) >= totalWidth) {
-    marcasOffset.value = 0;
-  }
+  const totalWidth = marcas.length * 140;
+  if (Math.abs(marcasOffset.value) >= totalWidth) marcasOffset.value = 0;
   animationFrame = requestAnimationFrame(animate);
 }
 
-const marcasStyle = computed(() => ({
-  transform: `translateX(${marcasOffset.value}px)`,
-  display: "flex",
-  alignItems: "center",
-}));
+const marcasStyle = computed(() => ({ transform: `translateX(${marcasOffset.value}px)` }));
 
-onMounted(() => {
-  animate();
-});
-onBeforeUnmount(() => {
-  cancelAnimationFrame(animationFrame);
-});
+onMounted(() => animate());
+onBeforeUnmount(() => cancelAnimationFrame(animationFrame));
 </script>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  overflow-x: hidden;
-  margin: 0;
-}
-
-/* ===== Base (Mobile-First: Optimizado para móviles) ===== */
+/* ===== FONDO TRANSPARENTE ===== */
 .home {
-  display: grid;
-  gap: 0.75rem; /* Reducido para menos espaciado */
   width: 100%;
-  max-width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0.25rem; /* Reducido para menos espaciado */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: transparent;
+  color: #fff;
+  min-height: 100vh;
 }
 
-/* ===== Hero (Mobile) ===== */
+/* ===== HERO ===== */
 .hero {
-  position: relative;
-  height: 100vh; /* Reducido para menos altura */
-  max-height: 580px; /* Reducido para menos altura */
+  height: 70vh;
+  max-height: 500px;
   border-radius: 1rem;
   overflow: hidden;
-  width: 70%; /* Asegurar que no desborde */
-  max-width: 100%; /* Contener el ancho */
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .hero__slide {
@@ -255,484 +176,328 @@ body {
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
 .hero__overlay {
   position: relative;
-  z-index: 2;
-  inset: 0;
-  display: grid;
-  place-items: center;
   height: 100%;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.488);
-  padding: 0.25rem; /* Reducido para menos espaciado */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  padding: 1rem;
 }
 
 .hero__content {
   text-align: center;
-  max-width: 100%;
-  padding: 0.25rem; /* Reducido para menos espaciado */
-  display: grid;
-  gap: 0.5rem; /* Reducido para menos espaciado */
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .hero__title {
-  font-size: clamp(0.9rem, 2.5vw, 1.4rem); /* Reducido para menos tamaño */
+  font-size: 1.8rem;
+  font-weight: 800;
   line-height: 1.2;
-  margin: 0;
- color: #ffffff;
-
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
 .hero__desc {
-  max-width: 90%;
-  margin: 0 auto;
-  font-size: clamp(0.7rem, 1.2vw, 0.8rem); /* Reducido para menos tamaño */
+  font-size: 0.9rem;
+  color: #ddd;
+  line-height: 1.4;
 }
 
-/* ===== Botón (Mobile) ===== */
-.btn {
-  padding: 0.4rem 0.8rem; /* Reducido para menos espaciado */
-  border-radius: 0.5rem;
-  background: #000000;
-  color: #ffffff;
-  text-decoration: none;
+/* ===== BOTÓN ===== */
+.btn--primary {
+  align-self: center;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, #000000, #0077ff);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
   font-weight: 600;
-  font-size: 0.75rem; /* Reducido para menos tamaño */
-  transition: background 0.2s ease;
-  display: inline-block;
-
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 0 10px rgba(0, 119, 255, 0.5);
+  transition: all 0.3s ease;
 }
 
 .btn--primary:hover {
-  background: #333333;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 119, 255, 0.7);
+  background: linear-gradient(135deg, #0a0a0a, #0099ff);
 }
 
-/* ===== Secciones (Mobile) ===== */
+/* ===== SECCIÓN HEADER ===== */
 .section-header {
   text-align: center;
-  margin-bottom: 2rem;
-  margin-top: 1.5rem;
-  width: 70%; /* Reducido para menos espaciado */
+  margin-bottom: 1rem;
 }
 
 .section-header h2 {
-  font-size: clamp(1.1rem, 2vw, 1.3rem); /* Reducido para menos tamaño */
-  color: #ffffff;
+  font-size: 1.4rem;
+  color: #fff;
   margin: 0;
-
 }
 
 .section-header p {
-  color: #ffffff;
-  font-size: clamp(0.7rem, 1vw, 0.8rem); /* Reducido para menos tamaño */
-  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #ccc;
+  margin: 0.3rem 0 0;
 }
 
-/* ===== Jugadores (Mobile) ===== */
-.contenedor-jugadores {
+/* ===== JUGADORES – FILTRO QUE FUNCIONA ===== */
+.grid-jugadores {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem; /* Reducido para menos espaciado */
-  justify-items: center;
-  list-style: none;
+  gap: 1.5rem;
   padding: 0;
-  margin: 0;
-  width: 70%;
-}
-
-
-
-.jugador {
-  width: 100%;
-  max-width: 240px;
-  /* Reducido para menos ancho máximo */
-}
-
-.jugador-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
+  list-style: none;
 }
 
 .jugador-card {
-  position: relative;
+  background: #1a1a1a;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reducido para menos sombra */
+  text-align: center;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 250px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .jugador-card:hover {
-  transform: translateY(-3px); /* Reducido para menos elevación */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Reducido para menos sombra */
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.jugador-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .jugador-img {
-  width: 100%;
-  height: 250px; /* Reducido para menos altura */
+  width: 150px;
+  height: 150px;
   object-fit: cover;
-  display: block;
+  margin: 0 auto 0.75rem;
+  border-radius: 0.5rem;
+  border: 2px solid transparent;
+  transition: all 0.4s ease;
+}
+
+.jugador-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 119, 255, 0.6);
+  border-color: #0077ff;
+}
+
+.jugador-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: #fff;
+  margin-top: auto;
 }
 
 .jugador-nombre {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  font-size: 1rem;
+  font-weight: 700;
   margin: 0;
-  padding: 0.3rem; /* Reducido para menos espaciado */
-  background: rgba(0, 0, 0, 0.75);
-  color: #ffffff;
-  text-align: center;
-  font-size: clamp(0.7rem, 1vw, 0.85rem); /* Reducido para menos tamaño */
 }
 
-/* ===== Marcas (Mobile) ===== */
+.jugador-marca {
+  font-size: 0.85rem;
+  color: #00ff88;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ===== MARCAS – FONDO BLANCO + TAMAÑO UNIFORME ===== */
 .marcas {
-  padding: 0.5rem 0.25rem; /* Reducido para menos espaciado */
-  width: 70%;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.marcas .section-header{
-    width: 100%;
-    margin-bottom: 1.2rem;
+.marcas .section-header h2,
+.marcas .section-header p {
+  color: #000;
+}
+
+.marcas .section-header p {
+  color: #555;
 }
 
 .marcas__carousel {
   overflow: hidden;
-  height: 50px; /* Reducido para menos altura */
-  width: 100%;
-  background: white;
-  border-radius: 0.5rem;
+  height: 70px;
+  background: #f8f8f8;
+  border-radius: 1rem;
+  margin: 1rem 0 0;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
 }
-
-
 
 .marcas__track {
   display: flex;
-  gap: 0.75rem; /* Reducido para menos espaciado */
-  width: max-content;
+  gap: 2rem;
+  align-items: center;
+  height: 100%;
 }
 
 .marcas__item {
-  width: 50px; /* Reducido para menos ancho */
-  height: auto;
+  width: 100px !important;
+  height: 50px !important;
   object-fit: contain;
-  filter: grayscale(0.5);
-  transition: filter 0.3s ease, transform 0.3s ease;
+  object-position: center;
+  filter: grayscale(0);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .marcas__item:hover {
-  filter: grayscale(0);
-  transform: scale(1.05); /* Reducido para menos escala */
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
 }
 
-/* ===== Ubicación (Mobile) ===== */
-.ubicacion {
-  padding: 0.8rem 0.25rem; /* Reducido para menos espaciado */
-  width: 70%;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.ubicacion .section-header{
-    width: 100%;
-    margin-bottom: 1.2rem;
-}
-
-.tarjeta-ubicacion {
-  background: #ffffff;
+/* ===== UBICACIÓN ===== */
+.ubicacion-card {
+  background: #1a1a1a;
   border-radius: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reducido para menos sombra */
-  padding: 0.75rem; /* Reducido para menos espaciado */
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Reducido para menos espaciado */
-  width: 100%;
+  gap: 1.5rem;
 }
 
 .info-ubicacion {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem; /* Reducido para menos espaciado */
+  gap: 1rem;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 0.3rem; /* Reducido para menos espaciado */
+  gap: 0.8rem;
+  font-size: 0.95rem;
 }
 
 .info-icon {
-  color: #000000;
+  width: 22px;
+  height: 22px;
+  color: #0077ff;
   flex-shrink: 0;
-  width: 16px; /* Reducido para menos tamaño */
-  height: 16px; /* Reducido para menos tamaño */
 }
 
 .info-ubicacion p {
   margin: 0;
-  color: #000000;
-  font-size: clamp(0.65rem, 1vw, 0.75rem); /* Reducido para menos tamaño */
+  color: #fff;
+}
+
+.info-ubicacion strong {
+  color: #00ff88;
 }
 
 .mapa {
-  order: 2;
-}
-
-.info-ubicacion {
-  order: 1;
-}
-
-.mapa iframe {
-  width: 100%;
-  max-width: 100%;
+  height: 200px;
   border-radius: 1rem;
-  display: block;
-  height: 150px; /* Reducido para menos altura */
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ===== Breakpoints para Tablets (480px) ===== */
-@media (min-width: 480px) {
-  .home {
-    gap: 1rem;
-    padding: 0.5rem;
-  }
-
-  .hero {
-    height: 35vh;
-    max-height: 320px;
-  }
-
-  .hero__overlay {
-    padding: 0.5rem;
-  }
-
-  .hero__content {
-    padding: 0.5rem;
-    gap: 0.75rem;
-  }
-
-  .hero__title {
-    font-size: clamp(1rem, 2.8vw, 1.6rem);
-  }
-
-  .hero__desc {
-    font-size: clamp(0.75rem, 1.3vw, 0.85rem);
-  }
-
-  .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-
-  .section-header {
-    margin-bottom: 0.75rem;
-  }
-
-  .section-header h2 {
-    font-size: clamp(1.2rem, 2.3vw, 1.4rem);
-  }
-
-  .section-header p {
-    font-size: clamp(0.7rem, 1.1vw, 0.8rem);
-  }
-
-  .contenedor-jugadores {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-
-  .jugador {
-    max-width: 260px;
-  }
-
-  .jugador-img {
-    height: 140px;
-  }
-
-  .jugador-nombre {
-    font-size: clamp(0.8rem, 1.1vw, 0.9rem);
-  }
-
-  .marcas {
-    padding: 0.75rem 0.5rem;
-  }
-
-  .marcas__carousel {
-    height: 60px;
-  }
-
-  .marcas__item {
-    width: 60px;
-  }
-
-  .mapa iframe {
-    height: 180px;
-  }
-}
-
-/* ===== Breakpoints para Tablets Grandes (768px) ===== */
+/* ===== RESPONSIVE ===== */
 @media (min-width: 768px) {
   .home {
-    gap: 1.5rem;
-    padding: 0.75rem;
+    gap: 2.5rem;
+    padding: 1.5rem;
   }
 
   .hero {
-    height: 40vh;
-    max-height: 400px;
-  }
-
-  .hero__overlay {
-    padding: 0.75rem;
-  }
-
-  .hero__content {
-    padding: 0.75rem;
-    gap: 1rem;
+    height: 75vh;
+    max-height: 550px;
   }
 
   .hero__title {
-    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-size: 2.2rem;
   }
 
   .hero__desc {
-    font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+    font-size: 1rem;
   }
 
-  .btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-  }
-
-  .section-header {
-    margin-bottom: 1rem;
-  }
-
-  .section-header h2 {
-    font-size: clamp(1.6rem, 2.5vw, 1.8rem);
-  }
-
-  .section-header p {
-    font-size: clamp(0.9rem, 1.3vw, 1rem);
-  }
-
-  .contenedor-jugadores {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
+  .grid-jugadores {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .jugador-img {
-    height: 200px;
-  }
-
-  .jugador-nombre {
-    font-size: clamp(0.9rem, 1.3vw, 1rem);
-  }
-
-  .marcas {
-    padding: 1rem 0.75rem;
+    width: 160px;
+    height: 160px;
   }
 
   .marcas__carousel {
     height: 80px;
   }
 
-  .marcas__track {
-    gap: 1.5rem;
-  }
-
   .marcas__item {
-    width: 90px;
+    width: 110px !important;
+    height: 60px !important;
   }
 
-  .ubicacion {
-    padding: 1rem 0.75rem;
-  }
-
-  .tarjeta-ubicacion {
-    padding: 1.5rem;
-  }
-
-  .mapa iframe {
-    height: 250px;
-  }
-}
-
-/* ===== Breakpoints para Desktop (1024px): ESTILOS ORIGINALES EXACTOS ===== */
-@media (min-width: 1024px) {
-  /* ===== Base Desktop (Original) ===== */
-  .home {
-    gap: 3rem;
-    max-width: 1600px;
-    padding: 1rem;
-  }
-
-  /* ===== Hero Desktop (Original) ===== */
-  .hero {
-    height: 80vh;
-    max-height: 600px;
-    border-radius: 1rem;
-    width: 100%;
-  }
-
-  .hero__content {
-    padding: 1rem;
-    gap: 1.5rem;
-  }
-
-  .hero__title {
-    font-size: clamp(1.8rem, 4.5vw, 3.2rem);
-  }
-
-  .hero__desc {
-    font-size: clamp(1rem, 2vw, 1.2rem);
-  }
-
-  /* ===== Botón Desktop (Original) ===== */
-  .btn {
-    padding: 0.75rem 1.5rem;
-    font-size: inherit;
-  }
-
-  /* ===== Secciones Desktop (Original) ===== */
-  .section-header {
-    margin-bottom: 2.5rem;
-    width: 100%;
-  }
-
-  .section-header h2 {
-    font-size: clamp(1.8rem, 3vw, 2.2rem);
-  }
-
-  .section-header p {
-    font-size: clamp(1rem, 1.5vw, 1.1rem);
-  }
-
-  /* ===== Jugadores Desktop (Original) ===== */
-  .contenedor-jugadores {
-    width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  .ubicacion-card {
+    flex-direction: row;
     gap: 2rem;
   }
 
+  .info-ubicacion {
+    flex: 1;
+  }
+
+  .mapa {
+    flex: 1;
+    height: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home {
+    gap: 3rem;
+    padding: 2rem;
+  }
+
+  .hero {
+    height: 80vh;
+    max-height: 600px;
+  }
+
+  .hero__title {
+    font-size: 2.8rem;
+  }
+
+  .hero__desc {
+    font-size: 1.1rem;
+  }
+
+  .grid-jugadores {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
   .jugador-img {
-    height: 280px;
-  }
-
-  .jugador-nombre {
-    font-size: clamp(1rem, 1.5vw, 1.1rem);
-  }
-
-  /* ===== Marcas Desktop (Original) ===== */
-  .marcas {
-    padding: 2rem 1rem;
-    width: 100%;
+    width: 180px;
+    height: 180px;
   }
 
   .marcas__carousel {
@@ -744,37 +509,19 @@ body {
   }
 
   .marcas__item {
-    width: 120px;
+    width: 130px !important;
+    height: 80px !important;
   }
 
-  /* ===== Ubicación Desktop (Original) ===== */
-  .ubicacion {
-    padding: 2rem 1rem;
-    width: 100%;
-  }
-
-  .tarjeta-ubicacion {
-    border-radius: 1rem;
+  .ubicacion-card {
     padding: 2rem;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    display: grid;
-  }
-
-  .info-ubicacion {
-    gap: 1.2rem;
   }
 
   .info-item {
-    gap: 1rem;
+    font-size: 1rem;
   }
 
-  .info-ubicacion p {
-    font-size: clamp(0.95rem, 1.5vw, 1rem);
-  }
-
-  .mapa iframe {
-    border-radius: 1rem;
+  .mapa {
     height: 320px;
   }
 }

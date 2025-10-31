@@ -63,28 +63,79 @@
               :alt="producto.nombre"
               class="producto-img"
               @error="handleImageError"
+              @click="abrirModal(producto)"
             />
 
             <div class="producto-info">
               <h3 class="producto-nombre">{{ producto.nombre }}</h3>
               <p class="producto-marca">{{ producto.marca }}</p>
-              <p class="producto-talla">Talla: {{ producto.talla }}</p>
+
+              <!-- Selector de tallas -->
+              <div class="talla-selector">
+                <label>Talla:</label>
+                <select v-model="producto.tallaSeleccionada">
+                  <option value="" disabled selected>Elige una talla</option>
+                  <option
+                    v-for="v in producto.variantes"
+                    :key="v.id_variante"
+                    :value="v.talla"
+                    :disabled="v.stock <= 0"
+                  >
+                    {{ v.talla }} 
+                    <span class="stock-status">
+                      ({{ v.stock > 0 ? `${v.stock} dis.` : 'Agotado' }})
+                    </span>
+                  </option>
+                </select>
+              </div>
+
               <p class="producto-precio">
                 ${{ producto.precio.toLocaleString() }}
               </p>
-              <button class="btn btn--primary" @click="agregarAlCarrito(producto)">
-                Agregar al carrito
+
+              <button
+                class="btn btn--primary"
+                @click="agregarAlCarrito(producto)"
+                :disabled="!producto.tallaSeleccionada"
+              >
+                {{ producto.tallaSeleccionada ? 'Agregar al carrito' : 'Selecciona talla' }}
               </button>
             </div>
           </li>
         </ul>
       </section>
     </section>
+
+    <!-- MODAL DE IMAGEN AMPLIADA -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div v-if="modalImagen" class="modal-backdrop" @click="cerrarModal">
+          <div class="modal-content" @click.stop>
+            <button class="modal-close" @click="cerrarModal" aria-label="Cerrar">
+              X
+            </button>
+            <img
+              :src="modalImagen"
+              :alt="modalProducto?.nombre"
+              class="modal-img"
+            />
+            <div class="modal-info">
+              <h3>{{ modalProducto?.nombre }}</h3>
+              <p>{{ modalProducto?.marca }}</p>
+              <p v-if="modalProducto?.tallaSeleccionada">
+                Talla seleccionada: <strong>{{ modalProducto.tallaSeleccionada }}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </main>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { obtenerMarcas } from "@/Services/marcas";
 import { obtenerTipos } from "@/Services/tipos";
 import { obtenerProductos } from "@/Services/producto";
@@ -94,6 +145,11 @@ import Swal from "sweetalert2";
 // URL base del servidor
 const BASE_URL = 'http://localhost:3000';
 
+// === RUTA Y ROUTER ===
+const route = useRoute();
+const router = useRouter();
+
+// === ESTADO ===
 const filtroMarca = ref("");
 const filtroTipo = ref("");
 const filtroContinente = ref("");
@@ -102,13 +158,15 @@ const tipos = ref([]);
 const productos = ref([]);
 const carritoStore = useCarritoStore();
 
-// Manejar errores de carga de imágenes
+// Modal
+const modalImagen = ref(null);
+const modalProducto = ref(null);
+
+// === CARGA DE DATOS ===
 const handleImageError = (event) => {
-  console.error('Error al cargar imagen:', event.target.src);
-  event.target.src = `${BASE_URL}/images/placeholder.jpg`; // Imagen por defecto
+  event.target.src = `${BASE_URL}/images/placeholder.jpg`;
 };
 
-// Cargar datos
 async function cargarDatos() {
   try {
     const [marcasData, tiposData, productosData] = await Promise.all([
@@ -116,15 +174,20 @@ async function cargarDatos() {
       obtenerTipos(),
       obtenerProductos()
     ]);
-    console.log('Productos:', productosData);
 
     productos.value = productosData.map(producto => ({
       ...producto,
-      imagen: `${BASE_URL}${producto.imagen}`, // Prefijar con la URL del servidor
-      continente: producto.tipo === 'Camiseta' ? (producto.continente || 'Sudamérica') : null
+      imagen: `${BASE_URL}${producto.imagen}`,
+      continente: producto.tipo === 'Camiseta' ? (producto.continente || 'Sudamérica') : null,
+      tallaSeleccionada: ""
     }));
+
     marcas.value = marcasData;
     tipos.value = tiposData;
+
+    // === APLICAR FILTRO DESDE URL AL CARGAR ===
+    aplicarFiltroDesdeURL();
+
   } catch (error) {
     console.error("Error al cargar datos:", error);
     Swal.fire({
@@ -137,19 +200,110 @@ async function cargarDatos() {
 
 onMounted(cargarDatos);
 
-// Agregar al carrito
-function agregarAlCarrito(producto) {
-  carritoStore.agregarProducto({
-    id: producto.id,
-    nombre: producto.nombre,
-    precio: producto.precio,
-    imagen: producto.imagen,
-    marca: producto.marca,
-    talla: producto.talla
-  });
+// === APLICAR FILTRO DESDE URL (al cargar y al cambiar) ===
+function aplicarFiltroDesdeURL() {
+  const marcaDesdeURL = route.query.marca;
+  if (marcaDesdeURL) {
+    // Buscar si la marca existe en la lista
+    const marcaValida = marcas.value.find(m => 
+      m.nombre_marca.toLowerCase() === marcaDesdeURL.toLowerCase()
+    );
+    if (marcaValida) {
+      filtroMarca.value = marcaValida.nombre_marca;
+    } else {
+      // Si no existe, limpiar
+      filtroMarca.value = "";
+    }
+  } else {
+    filtroMarca.value = "";
+  }
 }
 
-// Filtrado
+// === ESCUCHAR CAMBIOS EN LA URL ===
+watch(
+  () => route.query.marca,
+  (nuevoValor) => {
+    if (nuevoValor) {
+      const marcaValida = marcas.value.find(m => 
+        m.nombre_marca.toLowerCase() === nuevoValor.toLowerCase()
+      );
+      filtroMarca.value = marcaValida ? marcaValida.nombre_marca : "";
+    } else {
+      filtroMarca.value = "";
+    }
+  }
+);
+
+// === SINCRONIZAR SELECT CON URL (cuando cambie manualmente) ===
+watch(filtroMarca, (nuevoValor) => {
+  const query = { ...route.query };
+  if (nuevoValor) {
+    query.marca = nuevoValor;
+  } else {
+    delete query.marca;
+  }
+  router.replace({ query }).catch(() => {});
+});
+
+// === MODAL ===
+function abrirModal(producto) {
+  modalImagen.value = producto.imagen;
+  modalProducto.value = { ...producto };
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+  modalImagen.value = null;
+  modalProducto.value = null;
+  document.body.style.overflow = '';
+}
+
+// === CARRITO ===
+function agregarAlCarrito(producto) {
+  if (!producto.tallaSeleccionada) {
+    Swal.fire({
+      icon: "warning",
+      title: "Selecciona una talla",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  const variante = producto.variantes.find(v => v.talla === producto.tallaSeleccionada);
+
+  if (!variante || variante.stock <= 0) {
+    Swal.fire({
+      icon: "error",
+      title: "Talla agotada",
+      text: "Lo sentimos, esa talla no tiene stock.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  carritoStore.agregarProducto({
+    id_variante: variante.id_variante,
+    nombre: producto.nombre,
+    precio: Number(producto.precio),
+    imagen: producto.imagen,
+    marca: producto.marca,
+    talla: producto.tallaSeleccionada,
+  });
+
+  Swal.fire({
+    icon: "success",
+    title: "¡Agregado!",
+    text: `${producto.nombre} (Talla ${producto.tallaSeleccionada})`,
+    timer: 1500,
+    showConfirmButton: false,
+  });
+
+  producto.tallaSeleccionada = "";
+}
+
+// === FILTROS ===
 const productosFiltrados = computed(() => {
   return productos.value.filter((p) => {
     const coincideMarca = !filtroMarca.value || p.marca === filtroMarca.value;
@@ -166,6 +320,7 @@ const limpiarFiltros = () => {
   filtroMarca.value = "";
   filtroTipo.value = "";
   filtroContinente.value = "";
+  router.replace({ query: {} }).catch(() => {});
 };
 </script>
 
@@ -176,6 +331,7 @@ const limpiarFiltros = () => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
+  background: transparent;
 }
 
 /* ===== Layout ===== */
@@ -228,7 +384,6 @@ const limpiarFiltros = () => {
   display: inline-block;
 }
 
-/* 💠 Botón degradado azul eléctrico + negro */
 .btn--primary {
   background: linear-gradient(135deg, #000000, #0077ff);
   color: #fff;
@@ -236,10 +391,18 @@ const limpiarFiltros = () => {
   box-shadow: 0 0 8px rgba(0, 119, 255, 0.5);
 }
 
-.btn--primary:hover {
+.btn--primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #0a0a0a, #0099ff);
   transform: scale(1.05);
   box-shadow: 0 0 12px rgba(0, 119, 255, 0.7);
+}
+
+.btn--primary:disabled {
+  background: #333;
+  color: #777;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn--secondary {
@@ -269,7 +432,7 @@ const limpiarFiltros = () => {
   gap: 1.5rem;
 }
 
-/* 🟦 Tarjeta cuadrada moderna */
+/* Tarjeta moderna */
 .producto-card {
   background: #1a1a1a;
   border-radius: 1rem;
@@ -291,6 +454,16 @@ const limpiarFiltros = () => {
   object-fit: cover;
   margin-bottom: 0.75rem;
   border-radius: 0.5rem;
+  cursor: zoom-in;
+  transition: all 0.4s ease;
+  border: 2px solid transparent;
+}
+
+.producto-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 119, 255, 0.6);
+  border-color: #0077ff;
+  z-index: 10;
 }
 
 .producto-info {
@@ -310,9 +483,126 @@ const limpiarFiltros = () => {
   color: #ccc;
 }
 
-.producto-talla,
 .producto-precio {
   font-size: 0.9rem;
+  font-weight: 600;
+  color: #00ff88;
+}
+
+/* Selector de tallas */
+.talla-selector {
+  margin: 0.5rem 0;
+}
+
+.talla-selector label {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.talla-selector select {
+  width: 100%;
+  padding: 0.45rem;
+  border-radius: 0.5rem;
+  border: 1px solid #555;
+  background: #222;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.talla-selector select option:disabled {
+  color: #666;
+  font-style: italic;
+}
+
+.stock-status {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* ====== MODAL AMPLIADO ====== */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #111;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 119, 255, 0.5);
+  animation: modalPop 0.3s ease;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #000;
+  color: #fff;
+  border: 2px solid #0077ff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  transition: 0.3s ease;
+}
+
+.modal-close:hover {
+  background: #0077ff;
+  transform: scale(1.1);
+}
+
+.modal-img {
+  width: 100%;
+  height: auto;
+  max-height: 60vh;
+  object-fit: contain;
+  display: block;
+}
+
+.modal-info {
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+}
+
+.modal-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #00bfff;
+}
+
+.modal-info p {
+  color: #ccc;
+  margin: 0.25rem 0;
+}
+
+/* Animaciones */
+@keyframes modalPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 /* ===== Desktop ===== */
@@ -327,6 +617,16 @@ const limpiarFiltros = () => {
     position: sticky;
     top: 1rem;
     align-self: start;
+  }
+}
+
+/* ====== MOBILE ====== */
+@media (max-width: 768px) {
+  .producto-img {
+    cursor: pointer;
+  }
+  .producto-img:hover {
+    transform: none;
   }
 }
 </style>

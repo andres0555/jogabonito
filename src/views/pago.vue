@@ -1,38 +1,67 @@
 <template>
   <main class="pago">
+    <!-- Encabezado -->
     <section class="pago__header">
       <h1>Finalizar Compra</h1>
-      <p>Completa los datos para procesar tu pago en <strong>Joga Bonito ⚽</strong></p>
+      <p>Completa los datos para procesar tu pago en <strong>Joga Bonito</strong></p>
     </section>
 
+    <!-- Contenido principal -->
     <section class="pago__contenido">
-      <div class="pago__columnas">
-        <!-- Resumen de la compra -->
-        <div class="factura">
+      <!-- Resumen de compra (tarjeta estilo tienda) -->
+      <div class="pago-card pago-card--resumen">
+        <div class="pago-card__header">
           <h2>Resumen de tu compra</h2>
-          <div v-for="p in carritoStore.productos" :key="p.id" class="factura__producto">
-            <p>{{ p.nombre }} x{{ p.cantidad }}</p>
-            <span>
-              {{ (p.precio * p.cantidad).toLocaleString('es-CO', { style: 'currency', currency: 'COP' }).replace('COP', '').trim() }}
-            </span>
-          </div>
-          <hr />
-          <h3>
-            Total: {{ carritoStore.total.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }).replace('COP', '').trim() }}
-          </h3>
         </div>
 
-        <!-- Datos de la tarjeta -->
-        <div class="tarjeta">
+        <div class="pago-card__body">
+          <div
+            v-for="p in carritoStore.productos"
+            :key="p.id_variante"
+            class="resumen__producto"
+          >
+            <p class="producto-nombre">
+              {{ p.nombre }}
+              <span v-if="p.talla">({{ p.talla }})</span>
+              <span class="cantidad">x{{ p.cantidad }}</span>
+            </p>
+            <p class="producto-precio">
+              {{
+                (p.precio * p.cantidad)
+                  .toLocaleString('es-CO', { style: 'currency', currency: 'COP' })
+                  .replace('COP', '')
+                  .trim()
+              }}
+            </p>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="total">
+            <h3>Total a pagar:</h3>
+            <p class="total-precio">
+              {{
+                carritoStore.total
+                  .toLocaleString('es-CO', { style: 'currency', currency: 'COP' })
+                  .replace('COP', '')
+                  .trim()
+              }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de tarjeta (tarjeta estilo tienda) -->
+      <div class="pago-card pago-card--form">
+        <div class="pago-card__header">
           <h2>Datos de la tarjeta</h2>
+        </div>
+
+        <div class="pago-card__body">
           <form class="tarjeta__form" @submit.prevent="procesarPago">
-            <!-- Número de tarjeta -->
             <div class="form__grupo">
               <label for="numero">Número de tarjeta</label>
-              <div class="input-icono">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
-                </svg>
+              <div class="input-wrapper">
                 <input
                   id="numero"
                   v-model="tarjeta.numero"
@@ -44,13 +73,9 @@
               </div>
             </div>
 
-            <!-- Nombre del titular -->
             <div class="form__grupo">
               <label for="nombre">Nombre del titular</label>
-              <div class="input-icono">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+              <div class="input-wrapper">
                 <input
                   id="nombre"
                   v-model="tarjeta.nombre"
@@ -60,14 +85,10 @@
               </div>
             </div>
 
-            <!-- Expira / CVV -->
-            <div class="form__grupo fila">
+            <div class="form__fila">
               <div class="form__columna">
                 <label for="expira">Expira</label>
-                <div class="input-icono">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2z"/>
-                  </svg>
+                <div class="input-wrapper">
                   <input
                     id="expira"
                     v-model="tarjeta.expira"
@@ -81,10 +102,7 @@
 
               <div class="form__columna">
                 <label for="cvv">CVV</label>
-                <div class="input-icono">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                  </svg>
+                <div class="input-wrapper">
                   <input
                     id="cvv"
                     v-model="tarjeta.cvv"
@@ -97,7 +115,9 @@
               </div>
             </div>
 
-            <button type="submit" class="btn-pago">Finalizar compra</button>
+            <button type="submit" class="btn btn--primary" :disabled="loading">
+              {{ loading ? 'Procesando...' : 'Finalizar compra' }}
+            </button>
           </form>
         </div>
       </div>
@@ -115,83 +135,85 @@ import Swal from 'sweetalert2';
 const carritoStore = useCarritoStore();
 const authStore = useAuthStore();
 const router = useRouter();
+const loading = ref(false);
+const tarjeta = ref({ numero: '', nombre: '', expira: '', cvv: '' });
 
-const tarjeta = ref({
-  numero: '',
-  nombre: '',
-  expira: '',
-  cvv: ''
-});
-
-// === VALIDACIONES ===
 function formatearNumero(e) {
-  let valor = e.target.value.replace(/\D/g, ''); // Solo dígitos
-  valor = valor.match(/.{1,4}/g)?.join('-') || valor; // Añadir guion cada 4 dígitos
+  let valor = e.target.value.replace(/\D/g, '');
+  valor = valor.match(/.{1,4}/g)?.join('-') || valor;
   tarjeta.value.numero = valor.slice(0, 19);
 }
-
 function formatearExpira(e) {
-  let valor = e.target.value.replace(/\D/g, ''); // Solo dígitos
-  if (valor.length >= 3) valor = valor.slice(0, 2) + '/' + valor.slice(2); // Insertar '/'
+  let valor = e.target.value.replace(/\D/g, '');
+  if (valor.length >= 3) valor = valor.slice(0, 2) + '/' + valor.slice(2);
   tarjeta.value.expira = valor.slice(0, 5);
 }
-
 function validarCVV(e) {
-  tarjeta.value.cvv = e.target.value.replace(/\D/g, '').slice(0, 3); // Solo 3 dígitos
+  tarjeta.value.cvv = e.target.value.replace(/\D/g, '').slice(0, 3);
 }
 
-// === PROCESAR PAGO ===
 async function procesarPago() {
   if (carritoStore.productos.length === 0) {
-    Swal.fire('Tu carrito está vacío');
+    Swal.fire({
+      icon: 'warning',
+      title: 'Carrito vacío',
+      text: 'Tu carrito está vacío.',
+      timer: 2000,
+      showConfirmButton: false,
+    });
     router.push('/');
     return;
   }
 
+  loading.value = true;
   Swal.fire({
     icon: 'info',
     title: 'Procesando pago...',
-    text: 'Por favor espera unos segundos',
-    showConfirmButton: false,
-    timer: 1500
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
   });
 
   try {
-    await carritoStore.finalizarCompra(authStore.user.id_usuario);
-    router.push('/factura');
+    if (!authStore.user?.id_usuario) {
+      throw new Error('Debes iniciar sesión');
+    }
+
+    const compra = await carritoStore.finalizarCompra(authStore.user.id_usuario);
+    router.push({ name: 'Factura', params: { id: String(compra.id_factura) } });
   } catch (error) {
-    console.error(error);
+    console.error('Error en procesarPago:', error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudo procesar el pago. Intenta de nuevo.'
+      title: 'Error en el pago',
+      text: error.response?.data?.error || 'Intenta de nuevo',
+      timer: 3000,
+      showConfirmButton: true,
     });
+  } finally {
+    loading.value = false;
   }
 }
 </script>
 
 <style scoped>
-/* --- estilos idénticos al tuyo anterior, sin cambios --- */
+/* ===== ESTILOS GENERALES ===== */
 .pago {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
   min-height: 100vh;
-  background: #000000c2;
-  color: #fff;
-  padding: 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2rem;
 }
 
+/* ===== ENCABEZADO ===== */
 .pago__header {
   text-align: center;
   margin-bottom: 2rem;
+  color: white;
 }
 
 .pago__header h1 {
   font-size: 2.5rem;
-  color: #fff;
   margin-bottom: 0.5rem;
 }
 
@@ -200,131 +222,241 @@ async function procesarPago() {
   font-size: 1rem;
 }
 
+/* ===== CONTENIDO ===== */
 .pago__contenido {
-  width: 100%;
-  max-width: 1000px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
 }
 
-.pago__columnas {
+/* ===== TARJETA DE PAGO (IGUAL A producto-card) ===== */
+.pago-card {
+  background: #1a1a1a;
+  border-radius: 1rem;
+  overflow: hidden;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.factura, .tarjeta {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  padding: 2.5rem;
-  border-radius: 1.2rem;
-  box-shadow: 0 0 20px rgba(0, 119, 255, 0.25);
+.pago-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.pago-card__header {
+  margin-bottom: 1rem;
+}
+
+.pago-card__header h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pago-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: #fff;
   flex: 1;
-  min-width: 300px;
 }
 
-.factura__producto {
+/* ===== RESUMEN DE COMPRA ===== */
+.resumen__producto {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.8rem;
+  align-items: center;
+  background: rgba(0, 119, 255, 0.1);
+  padding: 0.7rem 1rem;
+  border-radius: 0.8rem;
+  font-size: 0.95rem;
 }
 
-.factura hr {
+.producto-nombre {
+  text-align: left;
+  color: #fff;
+  font-weight: 600;
+}
+
+.cantidad {
+  color: #00ff88;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.producto-precio {
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.divider {
   border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #444;
   margin: 1rem 0;
 }
 
-.factura h3 {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #0077ff;
-  text-align: right;
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
 }
 
+.total h3 {
+  font-size: 1.1rem;
+  color: #0077ff;
+  margin: 0;
+}
+
+.total-precio {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00ff88;
+  margin: 0;
+}
+
+/* ===== FORMULARIO DE TARJETA ===== */
 .tarjeta__form {
   display: flex;
   flex-direction: column;
-  gap: 1.7rem;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
 }
 
 .form__grupo {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
-.fila {
+.form__grupo label {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid #555;
+  background: #222;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #0077ff;
+  box-shadow: 0 0 8px rgba(0, 119, 255, 0.4);
+}
+
+.form__fila {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .form__columna {
   flex: 1;
 }
 
-label {
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 0.4rem;
-}
-
-.input-icono {
-  display: flex;
-  align-items: center;
-  background: #111;
-  border: 1px solid #444;
-  border-radius: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  transition: all 0.3s ease;
-}
-
-.input-icono svg {
-  color: #0077ff;
-  margin-right: 0.5rem;
-}
-
-.input-icono input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #fff;
+/* Botón reutiliza .btn--primary de tienda */
+.btn--primary {
+  margin-top: auto;
+  padding: 0.8rem 1.2rem;
   font-size: 1rem;
-  outline: none;
-}
-
-.input-icono:focus-within {
-  border-color: #0077ff;
-  box-shadow: 0 0 6px #0077ff40;
-}
-
-.btn-pago {
-  width: 100%;
-  padding: 0.9rem;
-  background: #0077ff;
-  border: none;
+  background: linear-gradient(135deg, #000000, #0077ff);
   color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border-radius: 2rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 119, 255, 0.5);
 }
 
-.btn-pago:hover {
-  background: #0099ff;
-  transform: translateY(-2px);
+.btn--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0a0a0a, #0099ff);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(0, 119, 255, 0.7);
 }
 
-/* Responsive */
+.btn--primary:disabled {
+  background: #333;
+  color: #777;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .pago__columnas {
-    flex-direction: column;
+  .pago {
+    padding: 1rem;
   }
 
-  .fila {
-    flex-direction: column;
+  .pago__header h1 {
+    font-size: 2rem;
   }
 
-  .form__columna {
-    width: 100%;
+  .pago__contenido {
+    grid-template-columns: 1fr;
+  }
+
+  .pago-card {
+    padding: 1.2rem 1rem;
+  }
+
+  .resumen__producto {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.3rem;
+  }
+
+  .producto-nombre {
+    font-size: 0.9rem;
+  }
+
+  .total h3 {
+    font-size: 1rem;
+  }
+
+  .total-precio {
+    font-size: 1.1rem;
+  }
+
+  .form__grupo input {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .btn--primary {
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pago__header h1 {
+    font-size: 1.8rem;
+  }
+
+  .pago-card__header h2 {
+    font-size: 1.1rem;
+  }
+
+  .form__fila {
+    flex-direction: column;
   }
 }
 </style>
